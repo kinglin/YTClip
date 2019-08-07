@@ -155,7 +155,9 @@ class DigitSpotter:
         # 1. Get candidate patches
         candidate_regions = self._region_proposer.detect(image)
         patches = candidate_regions.get_patches(dst_size=self._cls.input_shape)
-        
+        if patches.shape[0] == 0:
+            return [], 0, 0
+
         # 3. Run pre-trained classifier
         probs = self._cls.predict_proba(patches)[:, 1]
     
@@ -169,6 +171,8 @@ class DigitSpotter:
         if len(patches) > 0:
             probs_ = self._recognizer.predict_proba(patches)
             y_pred = probs_.argmax(axis=1)
+        else:
+            return [], 0, 0
         
         if show_result:
             for i, bb in enumerate(bbs):
